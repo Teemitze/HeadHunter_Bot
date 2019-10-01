@@ -72,10 +72,21 @@ public class Browser {
             logger.info("find button \"Изменить статус и отправить сообщение\"");
             webElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input[type=\"submit\"]")));
             webElement.click();
+            if (Configuration.MAX_LIMIT_SEND_OFFER) {
+                maxLimitSendOffer(driver);
+            }
             logger.info("click button \"Изменить статус и отправить сообщение\"");
             logger.info("offer send!");
         } catch (NoSuchElementException e) {
             logger.info("Do not find button \"Пригласить\"");
         }
+    }
+
+    private void maxLimitSendOffer(WebDriver driver) {
+        try {
+            if (driver.findElements(By.className("bloko-notification__content Bloko-Notification-Content")).size() != 0) {
+                System.exit(0);
+            }
+        } catch (NoSuchElementException ignored) {}
     }
 }

@@ -11,6 +11,7 @@ public class Configuration {
     public static final int START_PAGE = Integer.parseInt(getProperties().getProperty("startPage"));
     public static final int END_PAGE = Integer.parseInt(getProperties().getProperty("endPage"));
     public static final String GECKO_DRIVER = getProperties().getProperty("geckoDriver");
+    public static final boolean MAX_LIMIT_SEND_OFFER = Boolean.parseBoolean(getProperties().getProperty("maxLimitVacancySendOffer"));
 
     public static Properties getProperties() {
         Properties properties = new Properties();
