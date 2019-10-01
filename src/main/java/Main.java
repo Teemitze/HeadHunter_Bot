@@ -15,7 +15,7 @@ public class Main {
 
         WebDriver driver = browser.openBrowser();
         logger.info("opening " + HH);
-        driver.get(HH);
+        driver.get(HH + "/account/login");
         logger.info("opened " + HH);
         browser.authentication(driver);
 
