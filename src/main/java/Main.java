@@ -30,6 +30,9 @@ public class Main {
                     countEmployees++;
                     logger.info("Link employee: " + HH + e.getElementsByClass("resume-search-item__name").attr("href"));
                     driver.get(HH + e.getElementsByClass("resume-search-item__name").attr("href"));
+                    if (Configuration.MAX_LIMIT_RESUME_VIEW) {
+                        Browser.maxLimitResumeView(driver);
+                    }
                     new WebDriverWait(driver, 10).until(
                             webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
                     browser.sendOffer(driver);

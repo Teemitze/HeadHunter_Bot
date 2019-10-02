@@ -89,4 +89,12 @@ public class Browser {
             }
         } catch (NoSuchElementException ignored) {}
     }
+
+    public static void maxLimitResumeView(WebDriver driver) {
+        try {
+            if (driver.findElements(By.className("attention_bad")).size() != 0) {
+                System.exit(0);
+            }
+        } catch (NoSuchElementException ignored) {}
+    }
 }
