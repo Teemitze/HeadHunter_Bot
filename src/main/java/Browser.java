@@ -27,7 +27,7 @@ public class Browser {
 
     public WebDriver openBrowser() {
         WebDriver driver = new FirefoxDriver();
-        driver.manage().timeouts().implicitlyWait(10, SECONDS);
+        driver.manage().timeouts().implicitlyWait(5, SECONDS);
         driver.manage().window().maximize();
         return driver;
     }
@@ -58,8 +58,7 @@ public class Browser {
 
     public void chooseVacancy(WebDriver driver) {
         WebElement webElement = driver.findElement(By.className("Bloko-CustomSelect-Search"));
-        webElement.sendKeys(Configuration.REGION);
-        webElement.sendKeys(Keys.DOWN);
+        webElement.sendKeys(Configuration.VACANCY);
         webElement.sendKeys(Keys.ENTER);
     }
 

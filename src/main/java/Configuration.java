@@ -6,7 +6,7 @@ public class Configuration {
 
     public static final String LOGIN = getProperties().getProperty("login");
     public static final String PASSWORD = getProperties().getProperty("password");
-    public static final String REGION = getProperties().getProperty("region");
+    public static final String VACANCY = getProperties().getProperty("vacancy");
     public static final String PROFESSION = getProperties().getProperty("profession");
     public static final int START_PAGE = Integer.parseInt(getProperties().getProperty("startPage"));
     public static final int END_PAGE = Integer.parseInt(getProperties().getProperty("endPage"));
@@ -17,7 +17,7 @@ public class Configuration {
     public static Properties getProperties() {
         Properties properties = new Properties();
         try {
-            InputStream stream = new FileInputStream(new File("src/main/resources/config.properties"));
+            InputStream stream = new FileInputStream(new File("config.properties"));
             InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
             properties = new Properties();
             properties.load(reader);
