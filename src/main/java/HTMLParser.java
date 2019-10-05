@@ -50,7 +50,7 @@ public class HTMLParser {
             driver.get(browser.getWebPageWithEmployees(Configuration.PROFESSION, i));
             Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
             for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
-                logger.info("Employee name: " + uniqueLink.getValue() + " Page " + i + 1);
+                logger.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
                 logger.info("Link employee: " + uniqueLink.getKey());
                 driver.get(uniqueLink.getKey());
                 if (Configuration.MAX_LIMIT_RESUME_VIEW) {
