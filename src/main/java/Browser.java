@@ -46,6 +46,11 @@ public class Browser {
     }
 
     public void clickButtonOffer(WebDriver driver) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         WebDriverWait wait = new WebDriverWait(driver, 10);
         WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("bloko-button_secondary")));
         new RepositoryVacancy().addVacancy(HTMLParser.getUUIDEmployeeFromURL(driver.getCurrentUrl()));
@@ -53,6 +58,12 @@ public class Browser {
     }
 
     public void clickComboBoxVacancy(WebDriver driver) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        driver.get("https://hh.ru/employer/negotiations/change_topic?r=95b1c6fc000732d0de003ed77b4566426a4c74");
         WebDriverWait wait = new WebDriverWait(driver, 10);
         WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("Bloko-CustomSelect-Selected")));
         webElement.click();
@@ -61,6 +72,9 @@ public class Browser {
     public void chooseVacancy(WebDriver driver) {
         WebDriverWait wait = new WebDriverWait(driver, 10);
         WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("Bloko-CustomSelect-Search")));
+        for (int i = 0; i < Configuration.POSITION_VACANCY; i++) {
+            webElement.sendKeys(Keys.DOWN);
+        }
         webElement.sendKeys(Configuration.VACANCY);
         webElement.sendKeys(Keys.ENTER);
     }

@@ -53,9 +53,7 @@ public class HTMLParser {
                 logger.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
                 logger.info("Link employee: " + uniqueLink.getKey());
                 driver.get(uniqueLink.getKey());
-                if (Configuration.MAX_LIMIT_RESUME_VIEW) {
-                    Browser.maxLimitResumeView(driver);
-                }
+                Browser.maxLimitResumeView(driver);
                 new WebDriverWait(driver, 10).until(
                         webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
                 browser.sendOffer(driver);
