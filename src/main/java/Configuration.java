@@ -17,7 +17,7 @@ public class Configuration {
     public static Properties getProperties() {
         Properties properties = new Properties();
         try {
-            InputStream stream = new FileInputStream(new File("config.properties"));
+            InputStream stream = new FileInputStream(new File("/home/teemitze/IdeaProjects/HeadHunter_Bot/src/main/resources/config.properties"));
             InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
             properties = new Properties();
             properties.load(reader);

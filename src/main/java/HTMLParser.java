@@ -2,9 +2,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import repository.RepositoryVacancy;
 
 import java.util.HashMap;
@@ -47,16 +47,18 @@ public class HTMLParser {
 
     public void parseUniqueEmployees(WebDriver driver, Browser browser) {
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
-            driver.get(browser.getWebPageWithEmployees(Configuration.PROFESSION, i));
-            Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
-            for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
-                logger.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
-                logger.info("Link employee: " + uniqueLink.getKey());
-                driver.get(uniqueLink.getKey());
-                Browser.maxLimitResumeView(driver);
-                new WebDriverWait(driver, 10).until(
-                        webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-                browser.sendOffer(driver);
+            try {
+                driver.get(browser.getWebPageWithEmployees(Configuration.PROFESSION, i));
+                Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
+                for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
+                    logger.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
+                    logger.info("Link employee: " + uniqueLink.getKey());
+                    driver.get(uniqueLink.getKey());
+                    Browser.maxLimitResumeView(driver);
+                    browser.sendOffer(driver);
+                }
+            } catch (NoSuchElementException | TimeoutException ignored) {
+
             }
         }
     }

@@ -4,13 +4,12 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import repository.RepositoryVacancy;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 public class Browser {
     public String getWebPageWithEmployees(String profession, int page) {
         String link = Main.HH + "/search/resume?area=1&clusters=true" +
                 "&exp_period=all_time" +
                 "&gender=male" +
+                "&relocation=living" +
                 "&label=only_with_gender" +
                 "&label=only_with_age" +
                 "&logic=normal" +
@@ -22,12 +21,12 @@ public class Browser {
                 "&from=cluster_age" +
                 "&showClusters=true" +
                 "&page=" + page;
+
         return link;
     }
 
     public WebDriver openBrowser() {
         WebDriver driver = new FirefoxDriver();
-        driver.manage().timeouts().implicitlyWait(5, SECONDS);
         driver.manage().window().maximize();
         return driver;
     }
@@ -45,27 +44,16 @@ public class Browser {
         }
     }
 
-    public void clickButtonOffer(WebDriver driver) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void clickButtonOffer(WebDriver driver) throws NoSuchElementException, TimeoutException {
+        new RepositoryVacancy().addVacancy(HTMLParser.getUUIDEmployeeFromURL(driver.getCurrentUrl()));
         WebDriverWait wait = new WebDriverWait(driver, 10);
         WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("bloko-button_secondary")));
-        new RepositoryVacancy().addVacancy(HTMLParser.getUUIDEmployeeFromURL(driver.getCurrentUrl()));
         webElement.click();
     }
 
     public void clickComboBoxVacancy(WebDriver driver) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        driver.get("https://hh.ru/employer/negotiations/change_topic?r=95b1c6fc000732d0de003ed77b4566426a4c74");
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("Bloko-CustomSelect-Selected")));
+        WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("Bloko-CustomSelect")));
         webElement.click();
     }
 
@@ -85,17 +73,13 @@ public class Browser {
         webElement.click();
     }
 
-    public void sendOffer(WebDriver driver) {
-        try {
-            clickButtonOffer(driver);
-            clickComboBoxVacancy(driver);
-            chooseVacancy(driver);
-            clickSendMessage(driver);
-            if (Configuration.MAX_LIMIT_SEND_OFFER) {
-                maxLimitSendOffer(driver);
-            }
-        } catch (NoSuchElementException e) {
-            e.printStackTrace();
+    public void sendOffer(WebDriver driver) throws NoSuchElementException {
+        clickButtonOffer(driver);
+        clickComboBoxVacancy(driver);
+        chooseVacancy(driver);
+        clickSendMessage(driver);
+        if (Configuration.MAX_LIMIT_SEND_OFFER) {
+            maxLimitSendOffer(driver);
         }
     }
 
