@@ -1,9 +1,12 @@
 package repository;
 
+import logger.Logs;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+
+import java.util.logging.Level;
 
 public class HibernateUtil {
     private static SessionFactory sessionFactory = buildSessionFactory();
@@ -16,7 +19,8 @@ public class HibernateUtil {
             sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(registry);
-            throw new ExceptionInInitializerError("Initial SessionFactory failed" + e);
+            Logs.infoLog.log(Level.SEVERE, "Initial SessionFactory failed!", e);
+            throw new RuntimeException(e);
         }
         return sessionFactory;
     }

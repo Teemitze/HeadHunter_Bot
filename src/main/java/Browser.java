@@ -1,11 +1,26 @@
+import logger.Logs;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import repository.RepositoryVacancy;
 
+import java.util.logging.Level;
+
 public class Browser {
-    public String getWebPageWithEmployees(String profession, int page) {
+
+    private WebDriver driver;
+    private WebDriverWait wait;
+
+    Browser() {
+        this.driver = new FirefoxDriver();
+        this.driver = openBrowser();
+        this.wait = new WebDriverWait(driver, 10);
+        authentication();
+        new HTMLParser().parseUniqueEmployees(driver, this);
+    }
+
+    String getWebPageWithEmployees(int page) {
         String link = Main.HH + "/search/resume?area=1&clusters=true" +
                 "&exp_period=all_time" +
                 "&gender=male" +
@@ -16,7 +31,7 @@ public class Browser {
                 "&no_magic=false" +
                 "&order_by=relevance" +
                 "&pos=full_text" +
-                "&text=" + profession +
+                "&text=" + Configuration.PROFESSION +
                 "&age_from=20" +
                 "&from=cluster_age" +
                 "&showClusters=true" +
@@ -25,79 +40,79 @@ public class Browser {
         return link;
     }
 
-    public WebDriver openBrowser() {
-        WebDriver driver = new FirefoxDriver();
+    private WebDriver openBrowser() {
         driver.manage().window().maximize();
         return driver;
     }
 
-    public void authentication(WebDriver driver) {
-        WebElement webElement = driver.findElement(By.name("username"));
-        webElement.sendKeys(Configuration.LOGIN);
-        webElement = driver.findElement(By.name("password"));
-        webElement.sendKeys(Configuration.PASSWORD);
-        webElement.submit();
+    private void authentication() {
         try {
+            driver.get(Main.HH + "/account/login");
+            WebElement loginAndPassword = driver.findElement(By.name("username"));
+            loginAndPassword.sendKeys(Configuration.LOGIN);
+            loginAndPassword = driver.findElement(By.name("password"));
+            loginAndPassword.sendKeys(Configuration.PASSWORD);
+            loginAndPassword.submit();
             Thread.sleep(3000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Logs.infoLog.log(Level.SEVERE, "Thread interrupted its work", e);
+            throw new RuntimeException(e);
         }
     }
 
-    public void clickButtonOffer(WebDriver driver) throws NoSuchElementException, TimeoutException {
+    private void clickButtonOffer(WebDriver driver) throws NoSuchElementException, TimeoutException {
         new RepositoryVacancy().addVacancy(HTMLParser.getUUIDEmployeeFromURL(driver.getCurrentUrl()));
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("bloko-button_secondary")));
-        webElement.click();
+        waitWebElementToBeClickable("bloko-button_secondary").click();
     }
 
-    public void clickComboBoxVacancy(WebDriver driver) {
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("Bloko-CustomSelect")));
-        webElement.click();
+    private void clickComboBoxVacancy() {
+        waitWebElementToBeClickable("Bloko-CustomSelect").click();
     }
 
-    public void chooseVacancy(WebDriver driver) {
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.className("Bloko-CustomSelect-Search")));
+    private void chooseVacancy() {
+        WebElement comboBoxVacancy = waitWebElementToBeClickable("Bloko-CustomSelect-Search");
+        comboBoxVacancy.sendKeys(Configuration.VACANCY);
         for (int i = 0; i < Configuration.POSITION_VACANCY; i++) {
-            webElement.sendKeys(Keys.DOWN);
+            comboBoxVacancy.sendKeys(Keys.DOWN);
         }
-        webElement.sendKeys(Configuration.VACANCY);
-        webElement.sendKeys(Keys.ENTER);
+        comboBoxVacancy.sendKeys(Keys.ENTER);
     }
 
-    public void clickSendMessage(WebDriver driver) {
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        WebElement webElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input[type=\"submit\"]")));
-        webElement.click();
+    private void clickSendMessage() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input[type=\"submit\"]"))).click();
     }
 
-    public void sendOffer(WebDriver driver) throws NoSuchElementException {
+    void sendOffer(WebDriver driver) throws NoSuchElementException {
         clickButtonOffer(driver);
-        clickComboBoxVacancy(driver);
-        chooseVacancy(driver);
-        clickSendMessage(driver);
-        if (Configuration.MAX_LIMIT_SEND_OFFER) {
-            maxLimitSendOffer(driver);
+        clickComboBoxVacancy();
+        chooseVacancy();
+        clickSendMessage();
+        if (maxLimitSendOffer(driver)) {
+            Logs.infoLog.warning("The vacancy limit has been reached! Create a new vacancy!");
+            driver.quit();
+            System.exit(0);
         }
     }
 
-    private void maxLimitSendOffer(WebDriver driver) {
+    private boolean maxLimitSendOffer(WebDriver driver) {
         try {
-            if (driver.findElements(By.className("bloko-notification__content Bloko-Notification-Content")).size() != 0) {
-                System.exit(0);
-            }
+            driver.findElement(By.className("bloko-notification__plate"));
+            return true;
         } catch (NoSuchElementException ignored) {
+            return false;
         }
     }
 
-    public static void maxLimitResumeView(WebDriver driver) {
+    private WebElement waitWebElementToBeClickable(String element) {
+        return wait.until(ExpectedConditions.elementToBeClickable(By.className(element)));
+    }
+
+    static boolean maxLimitResumeView(WebDriver driver) {
         try {
-            if (driver.findElements(By.className("attention_bad")).size() != 0) {
-                System.exit(0);
-            }
+            driver.findElement(By.className("attention_bad"));
+            return true;
         } catch (NoSuchElementException ignored) {
+            return false;
         }
     }
 }

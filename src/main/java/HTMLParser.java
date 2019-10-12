@@ -1,3 +1,4 @@
+import logger.Logs;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,12 +10,10 @@ import repository.RepositoryVacancy;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 
-public class HTMLParser {
-    Logger logger = Logs.logs("invited");
-
-    public Map<String, String> getAllEmployeesOnPage(WebDriver driver) {
+class HTMLParser {
+    private Map<String, String> getAllEmployeesOnPage(WebDriver driver) {
         Document document = Jsoup.parse(driver.getPageSource());
         Elements elements = document.getElementsByClass("resume-search-item__content-wrapper");
         Map<String, String> employeesLink = new HashMap<>();
@@ -24,46 +23,55 @@ public class HTMLParser {
         return employeesLink;
     }
 
-    public Map<String, String> getUniqueEmployees(Map<String, String> linkEmployees) {
+    private Map<String, String> getUniqueEmployees(Map<String, String> linkEmployees) {
         RepositoryVacancy repositoryVacancy = new RepositoryVacancy();
         Map<String, String> uniqueEmployeesLink = new HashMap<>();
         for (Map.Entry employee : linkEmployees.entrySet()) {
             if (repositoryVacancy.findVacancy(getUUIDEmployeeFromURL(String.valueOf(employee.getKey()))) == null) {
                 uniqueEmployeesLink.put(String.valueOf(employee.getKey()), String.valueOf(employee.getValue()));
             } else {
-                logger.info("Такой водитель уже  был приглашён: " + employee.getValue());
+                Logs.invitedLog.info("Such a person has already been invited: " + employee.getValue() + "\n" + employee.getKey());
             }
         }
         return uniqueEmployeesLink;
     }
 
-    public String getLinkEmployee(Element element) {
+    private String getLinkEmployee(Element element) {
         return Main.HH + element.getElementsByClass("resume-search-item__name").attr("href");
     }
 
-    public String getNameEmployee(Element element) {
+    private String getNameEmployee(Element element) {
         return element.getElementsByClass("resume-search-item__fullname").text();
     }
 
-    public void parseUniqueEmployees(WebDriver driver, Browser browser) {
+    void parseUniqueEmployees(WebDriver driver, Browser browser) {
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
             try {
-                driver.get(browser.getWebPageWithEmployees(Configuration.PROFESSION, i));
+                final int COUNT_INVITATIONS_DAY = 470;
+                driver.get(browser.getWebPageWithEmployees(i));
+
                 Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
+
                 for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
-                    logger.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
-                    logger.info("Link employee: " + uniqueLink.getKey());
+                    Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
+                    Logs.invitedLog.info("Link employee: " + uniqueLink.getKey());
                     driver.get(uniqueLink.getKey());
-                    Browser.maxLimitResumeView(driver);
+                    if (Browser.maxLimitResumeView(driver) || RepositoryVacancy.countOfferDay() == COUNT_INVITATIONS_DAY) {
+                        Logs.infoLog.warning("The daily limit for resume views has been reached!");
+                        driver.quit();
+                        System.exit(0);
+                    }
                     browser.sendOffer(driver);
                 }
-            } catch (NoSuchElementException | TimeoutException ignored) {
-
+            } catch (NoSuchElementException | TimeoutException e) {
+                driver.get(driver.getCurrentUrl());
+                browser.sendOffer(driver);
+                Logs.infoLog.log(Level.SEVERE, "Error, element not found!", e);
             }
         }
     }
 
-    public static String getUUIDEmployeeFromURL(String url) {
+    static String getUUIDEmployeeFromURL(String url) {
         return url.substring(21, 59);
     }
 }
