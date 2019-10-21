@@ -37,7 +37,7 @@ class HTMLParser {
     }
 
     private String getLinkEmployee(Element element) {
-        return Main.HH + element.getElementsByClass("resume-search-item__name").attr("href");
+        return Main.HH + element.getElementsByClass("HH-VisitedResume-Href").attr("href");
     }
 
     private String getNameEmployee(Element element) {
@@ -72,6 +72,11 @@ class HTMLParser {
     }
 
     static String getUUIDEmployeeFromURL(String url) {
-        return url.substring(21, 59);
+        try {
+            return url.substring(21, 59);
+        } catch (StringIndexOutOfBoundsException e) {
+            Logs.infoLog.log(Level.SEVERE, "java.lang.StringIndexOutOfBoundsException!\n" + url, e);
+            return url;
+        }
     }
 }

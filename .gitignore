@@ -17,3 +17,6 @@ hs_err_pid*
 target
 .idea
 *.iml
+
+# properties
+config.properties

@@ -95,9 +95,9 @@ public class Browser {
     }
 
     private boolean maxLimitSendOffer(WebDriver driver) {
+        final String MAX_LIMIT_SEND_OFFER_MESSAGE = "Превышено максимальное количество приглашений на данную вакансию. Создайте новую вакансию для отправки приглашений.";
         try {
-            driver.findElement(By.className("bloko-notification__plate"));
-            return true;
+             return driver.findElement(By.className("bloko-notification__plate")).getText().equals(MAX_LIMIT_SEND_OFFER_MESSAGE);
         } catch (NoSuchElementException ignored) {
             return false;
         }
