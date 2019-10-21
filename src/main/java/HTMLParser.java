@@ -47,7 +47,7 @@ class HTMLParser {
     void parseUniqueEmployees(WebDriver driver, Browser browser) {
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
             try {
-                final int COUNT_INVITATIONS_DAY = 470;
+                final long COUNT_INVITATIONS_DAY = 470;
                 driver.get(browser.getWebPageWithEmployees(i));
 
                 Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
