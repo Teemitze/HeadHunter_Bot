@@ -18,7 +18,9 @@ class HTMLParser {
         Elements elements = document.getElementsByClass("resume-search-item__content-wrapper");
         Map<String, String> employeesLink = new HashMap<>();
         for (Element element : elements) {
-            employeesLink.put(getLinkEmployee(element), getNameEmployee(element));
+            if (getLinkEmployee(element) != null) {
+                employeesLink.put(getLinkEmployee(element), getNameEmployee(element));
+            }
         }
         return employeesLink;
     }
@@ -37,7 +39,11 @@ class HTMLParser {
     }
 
     private String getLinkEmployee(Element element) {
-        return Main.HH + element.getElementsByClass("HH-VisitedResume-Href").attr("href");
+        String link = element.getElementsByClass("HH-VisitedResume-Href").attr("href");
+        if (!link.isEmpty()) {
+            return Main.HH + link;
+        }
+        return null;
     }
 
     private String getNameEmployee(Element element) {
@@ -45,6 +51,9 @@ class HTMLParser {
     }
 
     void parseUniqueEmployees(WebDriver driver, Browser browser) {
+
+        long countEmployee = RepositoryVacancy.countOfferDay();
+
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
             try {
                 final long COUNT_INVITATIONS_DAY = 470;
@@ -56,12 +65,13 @@ class HTMLParser {
                     Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
                     Logs.invitedLog.info("Link employee: " + uniqueLink.getKey());
                     driver.get(uniqueLink.getKey());
-                    if (Browser.maxLimitResumeView(driver) || RepositoryVacancy.countOfferDay() == COUNT_INVITATIONS_DAY) {
+                    if (Browser.maxLimitResumeView(driver) || countEmployee == COUNT_INVITATIONS_DAY) {
                         Logs.infoLog.warning("The daily limit for resume views has been reached!");
                         driver.quit();
                         System.exit(0);
                     }
                     browser.sendOffer(driver);
+                    countEmployee++;
                 }
             } catch (NoSuchElementException | TimeoutException e) {
                 driver.get(driver.getCurrentUrl());
@@ -72,11 +82,6 @@ class HTMLParser {
     }
 
     static String getUUIDEmployeeFromURL(String url) {
-        try {
-            return url.substring(21, 59);
-        } catch (StringIndexOutOfBoundsException e) {
-            Logs.infoLog.log(Level.SEVERE, "java.lang.StringIndexOutOfBoundsException!\n" + url, e);
-            return url;
-        }
+        return url.substring(21, 59);
     }
 }
