@@ -3,7 +3,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import repository.RepositoryVacancy;
 
 import java.util.logging.Level;
 
@@ -35,6 +34,7 @@ public class Browser {
                 "&age_from=20" +
                 "&from=cluster_age" +
                 "&showClusters=true" +
+                "&items_on_page=50" +
                 "&page=" + page;
 
         return link;
@@ -60,11 +60,6 @@ public class Browser {
         }
     }
 
-    private void clickButtonOffer(WebDriver driver) throws NoSuchElementException, TimeoutException {
-        new RepositoryVacancy().addVacancy(HTMLParser.getUUIDEmployeeFromURL(driver.getCurrentUrl()));
-        waitWebElementToBeClickable("bloko-button_secondary").click();
-    }
-
     private void clickComboBoxVacancy() {
         waitWebElementToBeClickable("Bloko-CustomSelect").click();
     }
@@ -83,7 +78,6 @@ public class Browser {
     }
 
     void sendOffer(WebDriver driver) throws NoSuchElementException {
-        clickButtonOffer(driver);
         clickComboBoxVacancy();
         chooseVacancy();
         clickSendMessage();
@@ -92,12 +86,13 @@ public class Browser {
             driver.quit();
             System.exit(0);
         }
+        pause(500);
     }
 
     private boolean maxLimitSendOffer(WebDriver driver) {
         final String MAX_LIMIT_SEND_OFFER_MESSAGE = "Превышено максимальное количество приглашений на данную вакансию. Создайте новую вакансию для отправки приглашений.";
         try {
-             return driver.findElement(By.className("bloko-notification__plate")).getText().equals(MAX_LIMIT_SEND_OFFER_MESSAGE);
+            return driver.findElement(By.className("bloko-notification__plate")).getText().equals(MAX_LIMIT_SEND_OFFER_MESSAGE);
         } catch (NoSuchElementException ignored) {
             return false;
         }
@@ -107,12 +102,11 @@ public class Browser {
         return wait.until(ExpectedConditions.elementToBeClickable(By.className(element)));
     }
 
-    static boolean maxLimitResumeView(WebDriver driver) {
+    private void pause(long millis) {
         try {
-            driver.findElement(By.className("attention_bad"));
-            return true;
-        } catch (NoSuchElementException ignored) {
-            return false;
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

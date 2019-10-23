@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.logging.Level;
 
 class HTMLParser {
+    private long countEmployee = RepositoryVacancy.countOfferDay();
+
     private Map<String, String> getAllEmployeesOnPage(WebDriver driver) {
         Document document = Jsoup.parse(driver.getPageSource());
         Elements elements = document.getElementsByClass("resume-search-item__content-wrapper");
@@ -39,7 +41,7 @@ class HTMLParser {
     }
 
     private String getLinkEmployee(Element element) {
-        String link = element.getElementsByClass("HH-VisitedResume-Href").attr("href");
+        String link = element.getElementsByClass("bloko-link_dimmed").attr("href");
         if (!link.isEmpty()) {
             return Main.HH + link;
         }
@@ -52,25 +54,24 @@ class HTMLParser {
 
     void parseUniqueEmployees(WebDriver driver, Browser browser) {
 
-        long countEmployee = RepositoryVacancy.countOfferDay();
-
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
             try {
-                final long COUNT_INVITATIONS_DAY = 470;
                 driver.get(browser.getWebPageWithEmployees(i));
 
                 Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
 
                 for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
+                    String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
                     Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
-                    Logs.invitedLog.info("Link employee: " + uniqueLink.getKey());
+                    Logs.invitedLog.info("Link employee: " + Main.HH + "/resume/" + UUIDEmployeeFromURL);
                     driver.get(uniqueLink.getKey());
-                    if (Browser.maxLimitResumeView(driver) || countEmployee == COUNT_INVITATIONS_DAY) {
-                        Logs.infoLog.warning("The daily limit for resume views has been reached!");
+                    if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
+                        Logs.infoLog.warning("Indicated count people were invited!");
                         driver.quit();
                         System.exit(0);
                     }
                     browser.sendOffer(driver);
+                    new RepositoryVacancy().addVacancy(UUIDEmployeeFromURL);
                     countEmployee++;
                 }
             } catch (NoSuchElementException | TimeoutException e) {
@@ -82,6 +83,6 @@ class HTMLParser {
     }
 
     static String getUUIDEmployeeFromURL(String url) {
-        return url.substring(21, 59);
+        return url.substring(51);
     }
 }
