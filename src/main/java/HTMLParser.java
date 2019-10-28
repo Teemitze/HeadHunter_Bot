@@ -3,6 +3,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -57,22 +58,28 @@ class HTMLParser {
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
             try {
                 driver.get(browser.getWebPageWithEmployees(i));
+                if (isPageFound(driver)) {
 
-                Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
+                    Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
 
-                for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
-                    String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
-                    Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
-                    Logs.invitedLog.info("Link employee: " + Main.HH + "/resume/" + UUIDEmployeeFromURL);
-                    driver.get(uniqueLink.getKey());
-                    if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
-                        Logs.infoLog.warning("Indicated count people were invited!");
-                        driver.quit();
-                        System.exit(0);
+                    for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
+                        String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
+                        Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
+                        Logs.invitedLog.info("Link employee: " + Main.HH + "/resume/" + UUIDEmployeeFromURL);
+                        driver.get(uniqueLink.getKey());
+                        if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
+                            Logs.infoLog.warning("Indicated count people were invited!");
+                            driver.quit();
+                            System.exit(0);
+                        }
+                        browser.sendOffer(driver);
+                        new RepositoryVacancy().addVacancy(UUIDEmployeeFromURL);
+                        countEmployee++;
                     }
-                    browser.sendOffer(driver);
-                    new RepositoryVacancy().addVacancy(UUIDEmployeeFromURL);
-                    countEmployee++;
+                } else {
+                    Logs.infoLog.warning("Page not found!");
+                    driver.quit();
+                    System.exit(0);
                 }
             } catch (NoSuchElementException | TimeoutException e) {
                 driver.get(driver.getCurrentUrl());
@@ -82,7 +89,11 @@ class HTMLParser {
         }
     }
 
-    static String getUUIDEmployeeFromURL(String url) {
+    private boolean isPageFound(WebDriver driver) {
+        return !driver.findElement(By.className("header")).getText().equals("Ошибка 404");
+    }
+
+    private static String getUUIDEmployeeFromURL(String url) {
         return url.substring(51);
     }
 }
