@@ -16,7 +16,6 @@ public class Browser {
         this.driver = openBrowser();
         this.wait = new WebDriverWait(driver, 10);
         authentication();
-        new HTMLParser().parseUniqueEmployees(driver, this);
     }
 
     String getWebPageWithEmployees(int page) {
@@ -34,7 +33,7 @@ public class Browser {
                 "&age_from=20" +
                 "&from=cluster_age" +
                 "&showClusters=true" +
-                "&items_on_page=50" +
+                "&items_on_page=100" +
                 "&page=" + page;
 
         return link;
@@ -109,5 +108,9 @@ public class Browser {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    WebDriver getDriver() {
+        return driver;
     }
 }
