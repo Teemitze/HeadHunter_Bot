@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 public class MyTimer implements Runnable {
     private Controller controller;
-    private long count = 0;
+    private long count = -1;
 
     private final long minute = 60 * 1000;
 

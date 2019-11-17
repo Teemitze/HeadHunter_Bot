@@ -25,8 +25,8 @@ public class RepositoryVacancy {
         return employee;
     }
 
-    public static long countOfferDay() {
+    public static Long countOfferDay() {
         Session session = HibernateUtil.getSessionFactory().openSession();
-        return (long) session.createQuery("SELECT count(id) FROM Employee WHERE DATE(inviteDate) = DATE(NOW())").getSingleResult();
+        return (Long) session.createQuery("SELECT count(id) FROM Employee WHERE DATE(inviteDate) = DATE(NOW())").getSingleResult();
     }
 }
