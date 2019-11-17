@@ -1,3 +1,4 @@
 CREATE TABLE employees (
 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-employeeLink VARCHAR(255) NOT NULL unique);
+employeeLink VARCHAR(255) NOT NULL unique,
+inviteDate DATE NOT NULL);
