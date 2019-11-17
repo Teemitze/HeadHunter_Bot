@@ -69,7 +69,7 @@ public class Browser {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input[type=\"submit\"]"))).click();
     }
 
-    void sendOffer(WebDriver driver) throws NoSuchElementException {
+    void sendOffer(WebDriver driver) throws NoSuchElementException, TimeoutException {
         clickComboBoxVacancy();
         chooseVacancy();
         clickSendMessage();
@@ -86,7 +86,7 @@ public class Browser {
         final String MAX_LIMIT_SEND_OFFER_MESSAGE = "Превышено максимальное количество приглашений на данную вакансию. Создайте новую вакансию для отправки приглашений.";
         try {
             return driver.findElement(By.className("bloko-notification__plate")).getText().equals(MAX_LIMIT_SEND_OFFER_MESSAGE);
-        } catch (NoSuchElementException ignored) {
+        } catch (NoSuchElementException | TimeoutException ignored) {
             return false;
         }
     }

@@ -82,9 +82,9 @@ class HTMLParser {
                     System.exit(0);
                 }
             } catch (NoSuchElementException | TimeoutException e) {
+                Logs.infoLog.log(Level.SEVERE, "Warning, element not found! Try repeating send offer employee!", e);
                 driver.get(driver.getCurrentUrl());
                 browser.sendOffer(driver);
-                Logs.infoLog.log(Level.SEVERE, "Error, element not found!", e);
             }
         }
     }

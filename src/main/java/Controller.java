@@ -28,8 +28,8 @@ public class Controller implements Runnable {
     public void run() {
         try {
             start();
-        } catch (TimeoutException | NoSuchElementException e) {
-            Logs.infoLog.log(Level.SEVERE, "The browser will restart!", e);
+        } catch (NoSuchElementException | TimeoutException e) {
+            Logs.infoLog.log(Level.SEVERE, "Error, element not found, the browser will restart!", e);
             reboot();
         } catch (WebDriverException e) {
             Logs.infoLog.log(Level.SEVERE, "The browser was closed!");
