@@ -4,8 +4,6 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.logging.Level;
-
 public class Browser {
 
     private WebDriver driver;
@@ -45,18 +43,13 @@ public class Browser {
     }
 
     private void authentication() {
-        try {
-            driver.get(Main.HH + "/account/login");
-            WebElement loginAndPassword = driver.findElement(By.name("username"));
-            loginAndPassword.sendKeys(Configuration.LOGIN);
-            loginAndPassword = driver.findElement(By.name("password"));
-            loginAndPassword.sendKeys(Configuration.PASSWORD);
-            loginAndPassword.submit();
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Logs.infoLog.log(Level.SEVERE, "Thread interrupted its work", e);
-            throw new RuntimeException(e);
-        }
+        driver.get(Main.HH + "/account/login");
+        WebElement loginAndPassword = driver.findElement(By.name("username"));
+        loginAndPassword.sendKeys(Configuration.LOGIN);
+        loginAndPassword = driver.findElement(By.name("password"));
+        loginAndPassword.sendKeys(Configuration.PASSWORD);
+        loginAndPassword.submit();
+        pause(3000);
     }
 
     private void clickComboBoxVacancy() {
