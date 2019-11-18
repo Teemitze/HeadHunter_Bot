@@ -56,35 +56,43 @@ class HTMLParser {
     void parseUniqueEmployees(WebDriver driver, Browser browser) {
 
         for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
-            try {
-                driver.get(browser.getWebPageWithEmployees(i));
-                if (isPageFound(driver)) {
+            driver.get(browser.getWebPageWithEmployees(i));
+            if (isPageFound(driver)) {
 
-                    Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
+                Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
 
-                    for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
-                        String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
-                        Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
-                        Logs.invitedLog.info("Link employee: " + Main.HH + "/resume/" + UUIDEmployeeFromURL);
-                        driver.get(uniqueLink.getKey());
-                        if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
-                            Logs.infoLog.warning("Indicated count people were invited!");
-                            driver.quit();
-                            System.exit(0);
-                        }
-                        browser.sendOffer(driver);
-                        new RepositoryVacancy().addVacancy(UUIDEmployeeFromURL);
-                        countEmployee++;
+                for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
+                    String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
+                    Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
+                    Logs.invitedLog.info("Link employee: " + Main.HH + "/resume/" + UUIDEmployeeFromURL);
+                    driver.get(uniqueLink.getKey());
+                    if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
+                        Logs.infoLog.warning("Indicated count people were invited!");
+                        driver.quit();
+                        System.exit(0);
                     }
-                } else {
-                    Logs.infoLog.warning("Page not found!");
-                    driver.quit();
-                    System.exit(0);
+                    RepositoryVacancy repositoryVacancy = new RepositoryVacancy();
+                    try {
+                        browser.sendOffer(driver);
+                        repositoryVacancy.addVacancy(UUIDEmployeeFromURL);
+                    } catch (NoSuchElementException | TimeoutException e) {
+                        try {
+                            Logs.infoLog.log(Level.SEVERE, "Warning, element not found! Try repeating send offer " + Main.HH + "/resume/" + UUIDEmployeeFromURL, e);
+                            driver.get(driver.getCurrentUrl());
+                            browser.sendOffer(driver);
+                            repositoryVacancy.addVacancy(UUIDEmployeeFromURL);
+                            Logs.infoLog.log(Level.SEVERE, "Employee " + Main.HH + "/resume/" + UUIDEmployeeFromURL + " invited!", e);
+                        } catch (NoSuchElementException | TimeoutException e2) {
+                            Logs.infoLog.log(Level.SEVERE, "Warning, element not found again! This element will be skipped!", e2);
+                            continue;
+                        }
+                    }
+                    countEmployee++;
                 }
-            } catch (NoSuchElementException | TimeoutException e) {
-                Logs.infoLog.log(Level.SEVERE, "Warning, element not found! Try repeating send offer employee!", e);
-                driver.get(driver.getCurrentUrl());
-                browser.sendOffer(driver);
+            } else {
+                Logs.infoLog.warning("Page not found!");
+                driver.quit();
+                System.exit(0);
             }
         }
     }
