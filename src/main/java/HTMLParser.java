@@ -1,4 +1,3 @@
-import logger.Logs;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -7,14 +6,17 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import repository.RepositoryVacancy;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 class HTMLParser {
     private long countEmployee = RepositoryVacancy.countOfferDay();
+
+    private static final Logger log = LoggerFactory.getLogger(HTMLParser.class);
 
     private Map<String, String> getAllEmployeesOnPage(WebDriver driver) {
         Document document = Jsoup.parse(driver.getPageSource());
@@ -34,8 +36,6 @@ class HTMLParser {
         for (Map.Entry employee : linkEmployees.entrySet()) {
             if (repositoryVacancy.findVacancy(getUUIDEmployeeFromURL(String.valueOf(employee.getKey()))) == null) {
                 uniqueEmployeesLink.put(String.valueOf(employee.getKey()), String.valueOf(employee.getValue()));
-            } else {
-                Logs.invitedLog.info("Such a person has already been invited: " + employee.getValue() + "\n" + employee.getKey());
             }
         }
         return uniqueEmployeesLink;
@@ -63,11 +63,9 @@ class HTMLParser {
 
                 for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
                     String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
-                    Logs.invitedLog.info("Employee name: " + uniqueLink.getValue() + " Page " + (i + 1));
-                    Logs.invitedLog.info("Link employee: " + Main.HH + "/resume/" + UUIDEmployeeFromURL);
                     driver.get(uniqueLink.getKey());
                     if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
-                        Logs.infoLog.warning("Indicated count people were invited!");
+                        log.warn("Indicated count people were invited!");
                         driver.quit();
                         System.exit(0);
                     }
@@ -77,20 +75,20 @@ class HTMLParser {
                         repositoryVacancy.addVacancy(UUIDEmployeeFromURL);
                     } catch (NoSuchElementException | TimeoutException e) {
                         try {
-                            Logs.infoLog.log(Level.SEVERE, "Warning, element not found! Try repeating send offer " + Main.HH + "/resume/" + UUIDEmployeeFromURL, e);
+                            log.warn("Warning, element not found! Try repeating send offer " + Main.HH + "/resume/" + UUIDEmployeeFromURL, e);
                             driver.get(driver.getCurrentUrl());
                             browser.sendOffer(driver);
                             repositoryVacancy.addVacancy(UUIDEmployeeFromURL);
-                            Logs.infoLog.log(Level.SEVERE, "Employee " + Main.HH + "/resume/" + UUIDEmployeeFromURL + " invited!", e);
+                            log.info("Employee " + Main.HH + "/resume/" + UUIDEmployeeFromURL + " invited!", e);
                         } catch (NoSuchElementException | TimeoutException e2) {
-                            Logs.infoLog.log(Level.SEVERE, "Warning, element not found again! This element will be skipped!", e2);
+                            log.warn("Warning, element not found again! This element will be skipped!", e2);
                             continue;
                         }
                     }
                     countEmployee++;
                 }
             } else {
-                Logs.infoLog.warning("Page not found!");
+                log.warn("Page not found!");
                 driver.quit();
                 System.exit(0);
             }

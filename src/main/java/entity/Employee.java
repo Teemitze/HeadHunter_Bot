@@ -16,7 +16,8 @@ public class Employee {
     @Column(name = "inviteDate")
     private Date inviteDate;
 
-    Employee(){}
+    public Employee() {
+    }
 
     public Employee(String employeeLink, Date inviteDate) {
         this.employeeLink = employeeLink;

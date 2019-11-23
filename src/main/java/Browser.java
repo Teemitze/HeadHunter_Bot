@@ -1,10 +1,13 @@
-import logger.Logs;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Browser {
+
+    private static final Logger log = LoggerFactory.getLogger(Browser.class);
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -74,7 +77,7 @@ public class Browser {
         chooseVacancy();
         clickSendMessage();
         if (maxLimitSendOffer(driver)) {
-            Logs.infoLog.warning("The vacancy limit has been reached! Create a new vacancy!");
+            log.warn("The vacancy limit has been reached! Create a new vacancy!");
             driver.quit();
             System.exit(0);
         }
