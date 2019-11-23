@@ -1,3 +1,4 @@
+import configuration.ConfigurationHHBot;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -30,7 +31,7 @@ public class Browser {
                 "&no_magic=false" +
                 "&order_by=relevance" +
                 "&pos=full_text" +
-                "&text=" + Configuration.PROFESSION +
+                "&text=" + ConfigurationHHBot.PROFESSION +
                 "&age_from=20" +
                 "&from=cluster_age" +
                 "&showClusters=true" +
@@ -48,9 +49,9 @@ public class Browser {
     private void authentication() {
         driver.get(Main.HH + "/account/login");
         WebElement loginAndPassword = driver.findElement(By.name("username"));
-        loginAndPassword.sendKeys(Configuration.LOGIN);
+        loginAndPassword.sendKeys(ConfigurationHHBot.LOGIN_HH);
         loginAndPassword = driver.findElement(By.name("password"));
-        loginAndPassword.sendKeys(Configuration.PASSWORD);
+        loginAndPassword.sendKeys(ConfigurationHHBot.PASSWORD_HH);
         loginAndPassword.submit();
         pause(3000);
     }
@@ -61,8 +62,8 @@ public class Browser {
 
     private void chooseVacancy() {
         WebElement comboBoxVacancy = waitWebElementToBeClickable("Bloko-CustomSelect-Search");
-        comboBoxVacancy.sendKeys(Configuration.VACANCY);
-        for (int i = 0; i < Configuration.POSITION_VACANCY; i++) {
+        comboBoxVacancy.sendKeys(ConfigurationHHBot.VACANCY);
+        for (int i = 0; i < ConfigurationHHBot.POSITION_VACANCY; i++) {
             comboBoxVacancy.sendKeys(Keys.DOWN);
         }
         comboBoxVacancy.sendKeys(Keys.ENTER);

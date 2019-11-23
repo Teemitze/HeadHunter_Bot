@@ -1,3 +1,4 @@
+import configuration.ConfigurationHHBot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ public class Main {
     private static void start() {
         log.info("Bot started");
         try {
-            System.setProperty("webdriver.gecko.driver", Configuration.GECKO_DRIVER);
+            System.setProperty("webdriver.gecko.driver", ConfigurationHHBot.GECKO_DRIVER);
             browser = new Browser();
             new HTMLParser().parseUniqueEmployees(browser.getDriver(), browser);
         } catch (Exception e) {

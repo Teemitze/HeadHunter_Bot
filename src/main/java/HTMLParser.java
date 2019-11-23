@@ -1,3 +1,4 @@
+import configuration.ConfigurationHHBot;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -55,7 +56,7 @@ class HTMLParser {
 
     void parseUniqueEmployees(WebDriver driver, Browser browser) {
 
-        for (int i = Configuration.START_PAGE - 1; i <= Configuration.END_PAGE; i++) {
+        for (int i = ConfigurationHHBot.START_PAGE - 1; i <= ConfigurationHHBot.END_PAGE; i++) {
             driver.get(browser.getWebPageWithEmployees(i));
             if (isPageFound(driver)) {
 
@@ -64,7 +65,7 @@ class HTMLParser {
                 for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
                     String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
                     driver.get(uniqueLink.getKey());
-                    if (countEmployee == Configuration.MAX_LIMIT_SEND_OFFER) {
+                    if (countEmployee == ConfigurationHHBot.MAX_LIMIT_SEND_OFFER) {
                         log.warn("Indicated count people were invited!");
                         driver.quit();
                         System.exit(0);

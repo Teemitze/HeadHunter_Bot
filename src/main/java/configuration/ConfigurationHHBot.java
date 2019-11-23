@@ -1,3 +1,5 @@
+package configuration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,14 +10,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public class Configuration {
+public class ConfigurationHHBot {
 
-    private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+    private static final Logger log = LoggerFactory.getLogger(ConfigurationHHBot.class);
 
     private static final Path CONFIG_PATH = Paths.get("./config.properties");
 
-    public static final String LOGIN = loadProperties().getProperty("login");
-    public static final String PASSWORD = loadProperties().getProperty("password");
+    public static final String LOGIN_HH = loadProperties().getProperty("login_hh");
+    public static final String PASSWORD_HH = loadProperties().getProperty("password_hh");
+    public static final String LOGIN_DB = loadProperties().getProperty("login_db");
+    public static final String PASSWORD_DB = loadProperties().getProperty("password_db");
     public static final String VACANCY = loadProperties().getProperty("vacancy");
     public static final String PROFESSION = loadProperties().getProperty("profession");
     public static final int START_PAGE = Integer.parseInt(loadProperties().getProperty("startPage"));
