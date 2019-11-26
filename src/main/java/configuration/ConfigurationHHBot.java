@@ -3,18 +3,15 @@ package configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ConfigurationHHBot {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigurationHHBot.class);
 
-    private static final Path CONFIG_PATH = Paths.get("./config.properties");
+    private static final String CONFIG_PATH = "./config.properties";
 
     public static final String LOGIN_HH = loadProperties().getProperty("login_hh");
     public static final String PASSWORD_HH = loadProperties().getProperty("password_hh");
@@ -30,7 +27,7 @@ public class ConfigurationHHBot {
 
     public static Properties loadProperties() {
         final Properties properties = new Properties();
-        try (final BufferedReader reader = Files.newBufferedReader(CONFIG_PATH)) {
+        try (FileReader reader = new FileReader(CONFIG_PATH)) {
             properties.load(reader);
         } catch (IOException e) {
             log.error("Error in loading configuration", e);

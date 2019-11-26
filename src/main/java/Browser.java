@@ -1,12 +1,13 @@
 import configuration.ConfigurationHHBot;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Browser {
+public class Browser implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(Browser.class);
 
@@ -14,9 +15,11 @@ public class Browser {
     private WebDriverWait wait;
 
     Browser() {
-        this.driver = new FirefoxDriver();
+        FirefoxOptions firefoxOptions = new FirefoxOptions();
+        firefoxOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        this.driver = new FirefoxDriver(firefoxOptions);
         this.driver = openBrowser();
-        this.wait = new WebDriverWait(driver, 10);
+        this.wait = new WebDriverWait(driver, 30);
         authentication();
     }
 
@@ -78,11 +81,15 @@ public class Browser {
         chooseVacancy();
         clickSendMessage();
         if (maxLimitSendOffer(driver)) {
-            log.warn("The vacancy limit has been reached! Create a new vacancy!");
-            driver.quit();
-            System.exit(0);
+            closeBrowser(driver, "The vacancy limit has been reached! Create a new vacancy!");
         }
         pause(500);
+    }
+
+    public static void closeBrowser(WebDriver driver, String message) {
+        log.warn(message);
+        driver.quit();
+        System.exit(0);
     }
 
     private boolean maxLimitSendOffer(WebDriver driver) {
@@ -99,7 +106,7 @@ public class Browser {
         return wait.until(ExpectedConditions.elementToBeClickable(By.className(element)));
     }
 
-    private void pause(long millis) {
+    public void pause(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
@@ -109,5 +116,10 @@ public class Browser {
 
     WebDriver getDriver() {
         return driver;
+    }
+
+    @Override
+    public void close() {
+        this.getDriver().quit();
     }
 }

@@ -3,43 +3,30 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.RepositoryVacancy;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 class HTMLParser {
+    RepositoryVacancy repositoryVacancy = new RepositoryVacancy();
     private long countEmployee = RepositoryVacancy.countOfferDay();
 
     private static final Logger log = LoggerFactory.getLogger(HTMLParser.class);
 
-    private Map<String, String> getAllEmployeesOnPage(WebDriver driver) {
-        Document document = Jsoup.parse(driver.getPageSource());
-        Elements elements = document.getElementsByClass("resume-search-item__content-wrapper");
-        Map<String, String> employeesLink = new HashMap<>();
-        for (Element element : elements) {
-            if (getLinkEmployee(element) != null) {
-                employeesLink.put(getLinkEmployee(element), getNameEmployee(element));
-            }
-        }
-        return employeesLink;
+    private List<String> getAllEmployeesOnPage(WebDriver driver) {
+        Document pageWithEmployees = Jsoup.parse(driver.getPageSource());
+        Elements elements = pageWithEmployees.getElementsByClass("resume-search-item__content-wrapper");
+        return elements.stream().map(this::getLinkEmployee).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    private Map<String, String> getUniqueEmployees(Map<String, String> linkEmployees) {
-        RepositoryVacancy repositoryVacancy = new RepositoryVacancy();
-        Map<String, String> uniqueEmployeesLink = new HashMap<>();
-        for (Map.Entry employee : linkEmployees.entrySet()) {
-            if (repositoryVacancy.findVacancy(getUUIDEmployeeFromURL(String.valueOf(employee.getKey()))) == null) {
-                uniqueEmployeesLink.put(String.valueOf(employee.getKey()), String.valueOf(employee.getValue()));
-            }
-        }
-        return uniqueEmployeesLink;
+    private List<String> getUniqueEmployees(List<String> linkEmployees) {
+        List<String> employees = linkEmployees.stream().map(HTMLParser::getUUIDEmployeeFromURL).collect(Collectors.toList());
+        return repositoryVacancy.findVacancy(employees);
     }
 
     private String getLinkEmployee(Element element) {
@@ -50,48 +37,51 @@ class HTMLParser {
         return null;
     }
 
-    private String getNameEmployee(Element element) {
-        return element.getElementsByClass("resume-search-item__fullname").text();
-    }
-
     void parseUniqueEmployees(WebDriver driver, Browser browser) {
 
         for (int i = ConfigurationHHBot.START_PAGE - 1; i <= ConfigurationHHBot.END_PAGE; i++) {
             driver.get(browser.getWebPageWithEmployees(i));
             if (isPageFound(driver)) {
 
-                Map<String, String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
+                List<String> uniqueEmployeesLink = getUniqueEmployees(getAllEmployeesOnPage(driver));
 
-                for (Map.Entry<String, String> uniqueLink : uniqueEmployeesLink.entrySet()) {
-                    String UUIDEmployeeFromURL = getUUIDEmployeeFromURL(uniqueLink.getKey());
-                    driver.get(uniqueLink.getKey());
-                    if (countEmployee == ConfigurationHHBot.MAX_LIMIT_SEND_OFFER) {
-                        log.warn("Indicated count people were invited!");
-                        driver.quit();
-                        System.exit(0);
-                    }
-                    RepositoryVacancy repositoryVacancy = new RepositoryVacancy();
-                    try {
-                        browser.sendOffer(driver);
-                        repositoryVacancy.addVacancy(UUIDEmployeeFromURL);
-                    } catch (NoSuchElementException | TimeoutException e) {
+                if (!uniqueEmployeesLink.isEmpty()) {
+                    for (String uniqueLink : uniqueEmployeesLink) {
+                        driver.get(Main.HH + "/employer/negotiations/change_topic?r=" + uniqueLink);
+                        if (countEmployee == ConfigurationHHBot.MAX_LIMIT_SEND_OFFER) {
+                            Browser.closeBrowser(driver, "Indicated count people were invited!");
+                        }
+
+                        HandlingException attemptSendOffer = () -> {
+                            try {
+                                driver.get(driver.getCurrentUrl());
+                                browser.sendOffer(driver);
+                                repositoryVacancy.addVacancy(uniqueLink);
+                                log.info("Employee " + Main.HH + "/resume/" + uniqueLink + " invited!");
+                            } catch (NoSuchElementException | TimeoutException e2) {
+                                log.warn("Warning, element not found again! This element will be skipped!", e2);
+                            }
+                        };
+
                         try {
-                            log.warn("Warning, element not found! Try repeating send offer " + Main.HH + "/resume/" + UUIDEmployeeFromURL, e);
-                            driver.get(driver.getCurrentUrl());
                             browser.sendOffer(driver);
-                            repositoryVacancy.addVacancy(UUIDEmployeeFromURL);
-                            log.info("Employee " + Main.HH + "/resume/" + UUIDEmployeeFromURL + " invited!", e);
-                        } catch (NoSuchElementException | TimeoutException e2) {
-                            log.warn("Warning, element not found again! This element will be skipped!", e2);
+                            repositoryVacancy.addVacancy(uniqueLink);
+                        } catch (NoSuchElementException | TimeoutException e) {
+                            log.warn("Warning, element not found! Try repeating send offer " + Main.HH + "/resume/" + uniqueLink, e);
+                            attemptSendOffer.repeatSendOffer();
+                            continue;
+                        } catch (NoSuchSessionException e) {
+                            log.error("Network connection is interrupted, attempt to restore!", e);
+                            final int minute = 1000 * 60;
+                            browser.pause(minute);
+                            attemptSendOffer.repeatSendOffer();
                             continue;
                         }
+                        countEmployee++;
                     }
-                    countEmployee++;
                 }
             } else {
-                log.warn("Page not found!");
-                driver.quit();
-                System.exit(0);
+                Browser.closeBrowser(driver, "Page " + driver.getCurrentUrl() + " not found!");
             }
         }
     }

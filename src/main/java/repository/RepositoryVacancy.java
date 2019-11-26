@@ -1,10 +1,10 @@
 package repository;
 
-import org.hibernate.Session;
 import entity.Employee;
-import org.hibernate.query.Query;
+import org.hibernate.Session;
 
 import java.util.Date;
+import java.util.List;
 
 public class RepositoryVacancy {
 
@@ -18,11 +18,12 @@ public class RepositoryVacancy {
         session.close();
     }
 
-    public Employee findVacancy(String employeeLink) {
+    public List<String> findVacancy(List<String> employeesLink) {
         Session session = HibernateUtil.getSessionFactory().openSession();
-        Employee employee = session.createQuery("from Employee where employeeLink=:employeeLink", Employee.class).setParameter("employeeLink", employeeLink).uniqueResult();
+        List<String> duplicateEmployees = session.createQuery("select employeeLink from Employee where employeeLink IN :employeesLink").setParameterList("employeesLink", employeesLink).getResultList();
+        employeesLink.removeAll(duplicateEmployees);
         session.close();
-        return employee;
+        return employeesLink;
     }
 
     public static Long countOfferDay() {
