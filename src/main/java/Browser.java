@@ -19,26 +19,20 @@ public class Browser implements AutoCloseable {
         firefoxOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
         this.driver = new FirefoxDriver(firefoxOptions);
         this.driver = openBrowser();
-        this.wait = new WebDriverWait(driver, 30);
+        this.wait = new WebDriverWait(driver, 120);
         authentication();
     }
 
-    String getWebPageWithEmployees(int page) {
-        String link = Main.HH + "/search/resume?area=1&clusters=true" +
+    public static String getWebPageWithEmployees(int page) {
+        String link = Main.HH + "/search/resume?" +
+                "area=1&clusters=true" +
+                "&driver_license_types=B" +
                 "&exp_period=all_time" +
-                "&gender=male" +
-                "&relocation=living" +
                 "&label=only_with_gender" +
-                "&label=only_with_age" +
-                "&logic=normal" +
-                "&no_magic=false" +
+                "&logic=normal&no_magic=false" +
                 "&order_by=relevance" +
-                "&pos=full_text" +
-                "&text=" + ConfigurationHHBot.PROFESSION +
-                "&age_from=20" +
-                "&from=cluster_age" +
-                "&showClusters=true" +
-                "&items_on_page=100" +
+                "&pos=full_text&text=" + ConfigurationHHBot.PROFESSION +
+                "&gender=male&from=cluster_gender&showClusters=true" +
                 "&page=" + page;
 
         return link;
