@@ -6,15 +6,20 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.ConnectionFactory;
 import repository.RepositoryVacancy;
 
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 class HTMLParser {
-    RepositoryVacancy repositoryVacancy = new RepositoryVacancy();
-    private long countEmployee = RepositoryVacancy.countOfferDay();
+    final Connection connection = new ConnectionFactory().getConnection();
+    final RepositoryVacancy repositoryVacancy = new RepositoryVacancy(connection);
+    private long countEmployee = repositoryVacancy.countOfferDay();
+    static List<String> invitedEmployees = new ArrayList<>();
 
     private static final Logger log = LoggerFactory.getLogger(HTMLParser.class);
 
@@ -26,7 +31,7 @@ class HTMLParser {
 
     private List<String> getUniqueEmployees(List<String> linkEmployees) {
         List<String> employees = linkEmployees.stream().map(HTMLParser::getUUIDEmployeeFromURL).collect(Collectors.toList());
-        return repositoryVacancy.findVacancy(employees);
+        return repositoryVacancy.findUniqueVacancy(employees);
     }
 
     private String getLinkEmployee(Element element) {
@@ -56,7 +61,7 @@ class HTMLParser {
                             try {
                                 driver.get(driver.getCurrentUrl());
                                 browser.sendOffer(driver);
-                                repositoryVacancy.addVacancy(uniqueLink);
+                                invitedEmployees.add(uniqueLink);
                                 log.info("Employee " + Main.HH + "/resume/" + uniqueLink + " invited!");
                             } catch (NoSuchElementException | TimeoutException e2) {
                                 log.warn("Warning, element not found again! This element will be skipped!", e2);
@@ -65,7 +70,7 @@ class HTMLParser {
 
                         try {
                             browser.sendOffer(driver);
-                            repositoryVacancy.addVacancy(uniqueLink);
+                            invitedEmployees.add(uniqueLink);
                         } catch (NoSuchElementException | TimeoutException e) {
                             log.warn("Warning, element not found! Try repeating send offer " + Main.HH + "/resume/" + uniqueLink, e);
                             attemptSendOffer.repeatSendOffer();
@@ -81,7 +86,7 @@ class HTMLParser {
                     }
                 }
             } else {
-                Browser.closeBrowser(driver, "Page " + driver.getCurrentUrl() + " not found!");
+                log.info("Page " + driver.getCurrentUrl() + " not found!");
             }
         }
     }

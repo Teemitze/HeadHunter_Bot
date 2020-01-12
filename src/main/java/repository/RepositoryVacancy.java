@@ -1,33 +1,85 @@
 package repository;
 
-import entity.Employee;
-import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Date;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RepositoryVacancy {
 
-    public void addVacancy(String employeeLink) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        session.beginTransaction();
-        Employee employee = new Employee(employeeLink, new Date());
-        session.save(employee);
-        session.flush();
-        session.getTransaction().commit();
-        session.close();
+    private static final Logger log = LoggerFactory.getLogger(RepositoryVacancy.class);
+
+    Connection connection;
+
+    public RepositoryVacancy(Connection connection) {
+        this.connection = connection;
     }
 
-    public List<String> findVacancy(List<String> employeesLink) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        List<String> duplicateEmployees = session.createQuery("select employeeLink from Employee where employeeLink IN :employeesLink").setParameterList("employeesLink", employeesLink).getResultList();
+    public void addVacancy(List<String> employeesLink) {
+        try {
+            final Date today = new Date(System.currentTimeMillis());
+            final PreparedStatement statement = connection.prepareStatement("INSERT INTO employees (employeeLink, inviteDate) VALUES (?, ?)");
+            for (String employeeLink : employeesLink) {
+                statement.setString(1, employeeLink);
+                statement.setDate(2, today);
+                statement.addBatch();
+            }
+            statement.executeBatch();
+        } catch (SQLException e) {
+            log.error("addVacancy error!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<String> findUniqueVacancy(List<String> employeesLink) {
+        final List<String> duplicateEmployees = new ArrayList<>();
+        try {
+
+            String selectEmployeesLink = "SELECT employeeLink FROM employees WHERE employeeLink IN(";
+
+            StringBuilder stringBuilder = new StringBuilder(selectEmployeesLink);
+
+            for (int i = 0; i < employeesLink.size(); i++) {
+                if (i == employeesLink.size() - 1) {
+                    stringBuilder.append("?)");
+                } else {
+                    stringBuilder.append("?,");
+                }
+            }
+
+            selectEmployeesLink = stringBuilder.toString();
+            PreparedStatement statement = connection.prepareStatement(selectEmployeesLink);
+
+            for (String employeeLink : employeesLink) {
+                statement.setString(employeesLink.indexOf(employeeLink) + 1, employeeLink);
+            }
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                duplicateEmployees.add(resultSet.getString("employeeLink"));
+            }
+
+        } catch (SQLException e) {
+            log.error("findUniqueVacancy error!", e);
+            throw new RuntimeException(e);
+        }
+
         employeesLink.removeAll(duplicateEmployees);
-        session.close();
         return employeesLink;
     }
 
-    public static Long countOfferDay() {
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        return (Long) session.createQuery("SELECT count(id) FROM Employee WHERE DATE(inviteDate) = DATE(NOW())").getSingleResult();
+    public Long countOfferDay() {
+        try {
+            final Statement statement = connection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT count(id) FROM employees WHERE DATE(inviteDate) = DATE(NOW())");
+            resultSet.next();
+            return resultSet.getLong("count(id)");
+        } catch (SQLException e) {
+            log.error("countOfferDay error!", e);
+            throw new RuntimeException(e);
+        }
     }
 }
