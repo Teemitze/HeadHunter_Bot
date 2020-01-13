@@ -29,7 +29,6 @@ public class RepositoryVacancy {
             statement.executeBatch();
         } catch (SQLException e) {
             log.error("addVacancy error!", e);
-            throw new RuntimeException(e);
         }
     }
 

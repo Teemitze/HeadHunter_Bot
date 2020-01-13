@@ -12,7 +12,7 @@ public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        System.setProperty("webdriver.gecko.driver", ConfigurationHHBot.GECKO_DRIVER);
+        System.setProperty("webdriver.chrome.driver", ConfigurationHHBot.CHROME_DRIVER);
         try (Browser browser = new Browser()) {
             new HTMLParser().parseUniqueEmployees(browser.getDriver(), browser);
         } catch (Exception e) {

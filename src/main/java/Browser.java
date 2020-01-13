@@ -1,7 +1,7 @@
 import configuration.ConfigurationHHBot;
 import org.openqa.selenium.*;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -15,9 +15,9 @@ public class Browser implements AutoCloseable {
     private WebDriverWait wait;
 
     Browser() {
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
-        firefoxOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
-        this.driver = new FirefoxDriver(firefoxOptions);
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        this.driver = new ChromeDriver(chromeOptions);
         this.driver = openBrowser();
         this.wait = new WebDriverWait(driver, 120);
         authentication();
@@ -45,12 +45,13 @@ public class Browser implements AutoCloseable {
 
     private void authentication() {
         driver.get(Main.HH + "/account/login");
+        pause(2500);
         WebElement loginAndPassword = driver.findElement(By.name("username"));
         loginAndPassword.sendKeys(ConfigurationHHBot.LOGIN_HH);
         loginAndPassword = driver.findElement(By.name("password"));
         loginAndPassword.sendKeys(ConfigurationHHBot.PASSWORD_HH);
         loginAndPassword.submit();
-        pause(3000);
+        pause(2500);
     }
 
     private void clickComboBoxVacancy() {

@@ -22,7 +22,7 @@ public class ConfigurationHHBot {
     public static final int START_PAGE = Integer.parseInt(loadProperties().getProperty("startPage"));
     public static final int END_PAGE = Integer.parseInt(loadProperties().getProperty("endPage"));
     public static final int POSITION_VACANCY = Integer.parseInt(loadProperties().getProperty("positionVacancy"));
-    public static final String GECKO_DRIVER = loadProperties().getProperty("geckoDriver");
+    public static final String CHROME_DRIVER = loadProperties().getProperty("chromeDriver");
     public static final int MAX_LIMIT_SEND_OFFER = Integer.parseInt(loadProperties().getProperty("maxLimitSendOffer"));
 
     public static Properties loadProperties() {
