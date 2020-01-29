@@ -4,22 +4,21 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.ConnectionFactory;
 import repository.RepositoryVacancy;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class HTMLParser {
     final Connection connection = new ConnectionFactory().getConnection();
     final RepositoryVacancy repositoryVacancy = new RepositoryVacancy(connection);
     private long countEmployee = repositoryVacancy.countOfferDay();
-    static List<String> invitedEmployees = new ArrayList<>();
+    static Set<String> invitedEmployees = new HashSet<>();
 
     private static final Logger log = LoggerFactory.getLogger(HTMLParser.class);
 

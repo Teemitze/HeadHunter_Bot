@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class RepositoryVacancy {
 
@@ -17,7 +18,7 @@ public class RepositoryVacancy {
         this.connection = connection;
     }
 
-    public void addVacancy(List<String> employeesLink) {
+    public void addVacancy(Set<String> employeesLink) {
         try {
             final Date today = new Date(System.currentTimeMillis());
             final PreparedStatement statement = connection.prepareStatement("INSERT INTO employees (employeeLink, inviteDate) VALUES (?, ?)");
