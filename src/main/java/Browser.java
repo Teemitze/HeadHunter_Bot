@@ -33,6 +33,7 @@ public class Browser implements AutoCloseable {
                 "&order_by=relevance" +
                 "&pos=full_text&text=" + ConfigurationHHBot.PROFESSION +
                 "&gender=male&from=cluster_gender&showClusters=true" +
+                "&items_on_page=100" +
                 "&page=" + page;
 
         return link;
